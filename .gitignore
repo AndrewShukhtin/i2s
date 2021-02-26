@@ -1,2 +1,4 @@
 .idea
 cover.*
+vendor
+.DS_Store
