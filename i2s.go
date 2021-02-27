@@ -79,6 +79,8 @@ func (d *I2sDoer) i2s(data interface{}, out interface{}) error {
 			}
 			outValue.Set(reflect.Append(outValue, obj.Elem()))
 		}
+	case reflect.Interface:
+		outValue.Set(reflect.ValueOf(data))
 	case reflect.Struct:
 		values, ok := data.(map[string]interface{})
 		if !ok {
