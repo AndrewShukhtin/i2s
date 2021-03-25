@@ -1,9 +1,9 @@
 package i2s
 
 import (
-"fmt"
-"reflect"
-"strings"
+	"fmt"
+	"reflect"
+	"strings"
 )
 
 const (
@@ -13,7 +13,7 @@ const (
 type ModeType int
 
 const (
-	WithJsonTagsNames ModeType = 0x01
+	WithJsonTagsNames    ModeType = 0x01
 	WithStructFieldNames ModeType = 0x02
 )
 
@@ -81,6 +81,12 @@ func (d *I2sDoer) i2s(data interface{}, out interface{}) error {
 		}
 	case reflect.Interface:
 		outValue.Set(reflect.ValueOf(data))
+	case reflect.Ptr:
+		obj := reflect.New(outValue.Type().Elem())
+		if err := d.i2s(data, obj.Interface()); err != nil {
+			return fmt.Errorf("failed to process element")
+		}
+		outValue.Set(obj)
 	case reflect.Struct:
 		values, ok := data.(map[string]interface{})
 		if !ok {
@@ -88,7 +94,6 @@ func (d *I2sDoer) i2s(data interface{}, out interface{}) error {
 		}
 		for i := 0; i < outValue.NumField(); i++ {
 			fieldName, err := d.getFieldName(outValue.Type().Field(i))
-			//fmt.Println(fieldName)
 			if err != nil {
 				return err
 			}

@@ -199,7 +199,7 @@ func TestSimpleJson(t *testing.T) {
 }
 
 type ComplexJson struct {
-	SubSimple  SimpleJson    `json:"sub_simple"`
+	SubSimple  *SimpleJson   `json:"sub_simple"`
 	ManySimple []SimpleJson  `json:"many_simple"`
 	Blocks     []IDBlockJson `json:"blocks"`
 }
@@ -211,7 +211,7 @@ func TestComplexJson(t *testing.T) {
 		Active:   true,
 	}
 	expected := &ComplexJson{
-		SubSimple:  smpl,
+		SubSimple:  &smpl,
 		ManySimple: []SimpleJson{smpl, smpl},
 		Blocks:     []IDBlockJson{IDBlockJson{42}, IDBlockJson{42}},
 	}
@@ -319,3 +319,29 @@ func TestErrorsJson(t *testing.T) {
 	}
 }
 
+type InterfaceWithinStruct struct {
+	I   interface{} `json:"i"`
+	Val int         `json:"val"`
+}
+
+func TestInterfaceWithinStruct(t *testing.T) {
+	expected := &InterfaceWithinStruct{
+		I: map[string]interface{}{"some" : 3},
+		Val : 2,
+	}
+	jsonRaw, _ := json.Marshal(expected)
+	// fmt.Println(string(jsonRaw))
+
+	var tmpData interface{}
+	json.Unmarshal(jsonRaw, &tmpData)
+
+	result := new(InterfaceWithinStruct)
+	doer := NewI2sDoer(WithJsonTagsNames)
+	err := doer.Do(tmpData, result)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+	}
+	if !reflect.DeepEqual(expected, result) {
+		t.Errorf("results not match\nGot:\n%#v\nExpected:\n%#v", result, expected)
+	}
+}
